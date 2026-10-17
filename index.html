@@ -17,7 +17,11 @@
   .stage { perspective: 1200px; width: min(80vw, 300px); aspect-ratio: 3 / 5; }
   .card { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .7s cubic-bezier(.2,.7,.2,1); }
   .card.face-up { transform: rotateY(180deg); }
-  .card.shuffle { transform: rotateY(90deg) scale(.96); transition-duration: .06s; }
+  /* The reel is a vertical strip of face-down cards that slides through a card-sized window. */
+  .reel { position: absolute; inset: 0; overflow: hidden; border-radius: 12px; display: none; z-index: 1; }
+  .reel.on { display: block; }
+  #strip { height: 100%; } /* gives .reel-item a definite 100% height, so each card is exactly window-sized */
+  .reel-item { height: 100%; margin-bottom: var(--gap); border: 2px solid var(--edge); border-radius: 12px; background: var(--card) center / cover no-repeat; }
   .face { position: absolute; inset: 0; backface-visibility: hidden; border: 2px solid var(--edge); border-radius: 12px; overflow: hidden; }
   .back { background: var(--card) center / cover no-repeat; }
   .front { background: var(--card); transform: rotateY(180deg); display: flex; flex-direction: column; align-items: center;
@@ -39,6 +43,7 @@
     <div class="face back" id="back" aria-hidden="true"></div>
     <div class="face front"><div class="text" id="text"></div><div class="name" id="name"></div></div>
   </div>
+  <div class="reel" id="reel" aria-hidden="true"><div id="strip"></div></div>
 </div>
 <button id="draw">Draw a card</button>
 <!-- Screen readers hear the result here; the card itself is visual. -->
@@ -58,7 +63,7 @@
   TAROT.forEach(c => { new Image().src = c.img; });
   showBack(pick(TAROT));
 
-  // Face-down cards go by showing only their Tarot art, never their strategy; the card that lands
+  // Face-down cards go by showing only their Tarot art, never their strategy; the card the reel stops on
   // is the one whose strategy is revealed. Each Tarot card owns exactly one strategy.
   let last = null;
   function drawOne() {
@@ -67,25 +72,52 @@
     return (last = c);
   }
 
+  // Slide a strip of face-down cards through the window, top-to-bottom or bottom-to-top at random,
+  // easing out so it settles on the chosen card. Resolves once it has stopped.
+  const reel = document.getElementById('reel'), strip = document.getElementById('strip');
+  const GAP = 14, REEL_CARDS = 18, SPIN_MS = 2800;
+  async function spin(chosen) {
+    strip.getAnimations().forEach(a => a.cancel()); // drop the previous spin's held (fill: forwards) end state
+    const down = Math.random() < 0.5;
+    const seq = [];
+    for (let i = 0; i < REEL_CARDS - 1; i++) {
+      let c; do { c = pick(TAROT); } while (c === seq[i - 1] || c === chosen);
+      seq.push(c);
+    }
+    // Downward travel ends on the top slot; upward travel ends on the bottom slot.
+    if (down) seq.unshift(chosen); else seq.push(chosen);
+    strip.replaceChildren(...seq.map(c => {
+      const d = document.createElement('div');
+      d.className = 'reel-item';
+      d.style.backgroundImage = `url(${c.img})`;
+      return d;
+    }));
+    reel.style.setProperty('--gap', GAP + 'px');
+    reel.classList.add('on'); // must be visible before measuring: a display:none reel reports clientHeight 0
+    const far = -(REEL_CARDS - 1) * (reel.clientHeight + GAP);
+    const [from, to] = down ? [far, 0] : [0, far];
+    await strip.animate([{ transform: `translateY(${from}px)` }, { transform: `translateY(${to}px)` }],
+      { duration: SPIN_MS, easing: 'cubic-bezier(.33,1,.68,1)', fill: 'forwards' }).finished;
+  }
+
   async function draw() {
     btn.disabled = true;
     if (card.classList.contains('face-up')) {   // turn the old card face-down first
       card.classList.remove('face-up');
       await wait(REDUCED ? 0 : 700);
     }
-    if (!REDUCED) {
-      for (let i = 0, d = 70; i < 9; i++, d *= 1.25) {
-        showBack(pick(TAROT));
-        card.classList.add('shuffle'); await wait(d / 2);
-        card.classList.remove('shuffle'); await wait(d / 2);
-      }
-    }
     const c = drawOne();
-    showBack(c);
     textEl.textContent = c.text;
     nameEl.textContent = c.name;
     live.textContent = `${c.name}: ${c.text}`;
-    if (!REDUCED) await wait(350); // let the chosen card sit face-down for a beat
+    if (!REDUCED) {
+      await spin(c);
+      showBack(c);                 // the real card underneath now matches the one the reel stopped on
+      await wait(700);             // hold on the selected card before turning it over
+      reel.classList.remove('on');
+    } else {
+      showBack(c);
+    }
     card.classList.add('face-up');
     btn.textContent = 'Draw another';
     btn.disabled = false;
