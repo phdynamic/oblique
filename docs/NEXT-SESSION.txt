@@ -1,2 +1,2 @@
-Left off: Tarot version built and checked on desktop dark. Nothing committed or pushed.
-Next: check phone width + light mode + reduced-motion (TESTING-OWED.md), commit, push to phdynamic/oblique, enable GitHub Pages. Consider a credits line for the art.
+Left off: pushed to phdynamic/oblique; live at https://phdynamic.github.io/oblique/ (Pages from main, root).
+Next: check phone width + light mode + reduced-motion (TESTING-OWED.md); consider an art credit line.
