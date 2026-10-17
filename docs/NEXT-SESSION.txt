@@ -1,2 +1,2 @@
-Left off: vertical-reel animation built, tested on desktop dark, committed and pushed; live on GitHub Pages.
+Left off: reel + instant-hide of previous card done and committed locally; NOT yet pushed (Pages still has the previous version).
 Next: phone width + light mode + reduced-motion checks (TESTING-OWED.md); consider an art credit line.

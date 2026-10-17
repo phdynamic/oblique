@@ -30,3 +30,9 @@
 - Reduced motion: no reel, no hold; the card flips straight to the result.
 - Supersedes: the 9-step edge-on symbol/back flash.
 - Rejected: easing `cubic-bezier(.12,.6,.15,1)` — covered 99% of the distance in 0.5s, then crawled for 2s.
+
+## 2026-10-17 — Previous card disappears instantly on a new draw (active)
+- Requested by developer: the old card must not sit behind the reel cards as they cycle.
+- On "Draw another" the card is hidden at once (`.gone` = `visibility:hidden`, un-flipped with transitions off); no flip-back. It reappears face-down under the reel when the reel stops, then holds and flips.
+- Applies to the first draw too (hides the idle card back behind the reel).
+- Supersedes: the 700ms flip-back before each spin.
