@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Oblique Strategies</title>
+<style>
+  :root { --bg: #f4efe6; --ink: #1d1b18; --card: #fffdf8; --edge: #cfc6b4; --focus: #8a5a00; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #15140f; --ink: #f1ebdd; --card: #24221b; --edge: #4a4639; --focus: #e0b04a; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 2rem; padding: 1rem; background: var(--bg); color: var(--ink); font-family: Georgia, "Times New Roman", serif; }
+  h1 { font-size: 1rem; letter-spacing: .25em; text-transform: uppercase; font-weight: normal; margin: 0; }
+  /* Tarot art is 3:5, so the card is too. */
+  .stage { perspective: 1200px; width: min(80vw, 300px); aspect-ratio: 3 / 5; }
+  .card { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .7s cubic-bezier(.2,.7,.2,1); }
+  .card.face-up { transform: rotateY(180deg); }
+  .card.shuffle { transform: rotateY(90deg) scale(.96); transition-duration: .06s; }
+  .face { position: absolute; inset: 0; backface-visibility: hidden; border: 2px solid var(--edge); border-radius: 12px; overflow: hidden; }
+  .back { background: var(--card) center / cover no-repeat; }
+  .front { background: var(--card); transform: rotateY(180deg); display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 1.2rem; padding: 8%; text-align: center; }
+  .front .text { font-size: clamp(1.3rem, 5.5vw, 1.7rem); line-height: 1.35; }
+  .front .name { font-size: .8rem; letter-spacing: .2em; text-transform: uppercase; opacity: .65; }
+  button { font: inherit; font-size: 1.05rem; padding: .7rem 2rem; border-radius: 999px; cursor: pointer;
+    border: 2px solid var(--ink); background: var(--ink); color: var(--bg); }
+  button:disabled { opacity: .5; cursor: default; }
+  button:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+  .sr { position: absolute; left: -9999px; }
+  @media (prefers-reduced-motion: reduce) { .card { transition: none; } }
+</style>
+</head>
+<body>
+<h1>Oblique Strategies</h1>
+<div class="stage">
+  <div class="card" id="card">
+    <div class="face back" id="back" aria-hidden="true"></div>
+    <div class="face front"><div class="text" id="text"></div><div class="name" id="name"></div></div>
+  </div>
+</div>
+<button id="draw">Draw a card</button>
+<!-- Screen readers hear the result here; the card itself is visual. -->
+<p id="live" class="sr" aria-live="polite"></p>
+
+<script src="tarot.js"></script>
+<script>
+  const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const card = document.getElementById('card'), back = document.getElementById('back');
+  const textEl = document.getElementById('text'), nameEl = document.getElementById('name');
+  const btn = document.getElementById('draw'), live = document.getElementById('live');
+  const pick = a => a[Math.floor(Math.random() * a.length)];
+  const wait = ms => new Promise(r => setTimeout(r, ms));
+  const showBack = c => { back.style.backgroundImage = `url(${c.img})`; };
+
+  // Preload every card face so the flip-through never flashes a blank back.
+  TAROT.forEach(c => { new Image().src = c.img; });
+  showBack(pick(TAROT));
+
+  // Face-down cards go by showing only their Tarot art, never their strategy; the card that lands
+  // is the one whose strategy is revealed. Each Tarot card owns exactly one strategy.
+  let last = null;
+  function drawOne() {
+    let c;
+    do { c = pick(TAROT); } while (c === last); // never repeat the card just shown
+    return (last = c);
+  }
+
+  async function draw() {
+    btn.disabled = true;
+    if (card.classList.contains('face-up')) {   // turn the old card face-down first
+      card.classList.remove('face-up');
+      await wait(REDUCED ? 0 : 700);
+    }
+    if (!REDUCED) {
+      for (let i = 0, d = 70; i < 9; i++, d *= 1.25) {
+        showBack(pick(TAROT));
+        card.classList.add('shuffle'); await wait(d / 2);
+        card.classList.remove('shuffle'); await wait(d / 2);
+      }
+    }
+    const c = drawOne();
+    showBack(c);
+    textEl.textContent = c.text;
+    nameEl.textContent = c.name;
+    live.textContent = `${c.name}: ${c.text}`;
+    if (!REDUCED) await wait(350); // let the chosen card sit face-down for a beat
+    card.classList.add('face-up');
+    btn.textContent = 'Draw another';
+    btn.disabled = false;
+  }
+  btn.addEventListener('click', draw);
+</script>
+</body>
+</html>
