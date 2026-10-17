@@ -1,2 +1,2 @@
-Left off: reel + instant-hide of previous card done and committed locally; NOT yet pushed (Pages still has the previous version).
+Left off: slowed spin to 3.08s; all committed and pushed; live on Pages.
 Next: phone width + light mode + reduced-motion checks (TESTING-OWED.md); consider an art credit line.

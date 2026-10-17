@@ -76,7 +76,7 @@
   // Slide a strip of face-down cards through the window, top-to-bottom or bottom-to-top at random,
   // easing out so it settles on the chosen card. Resolves once it has stopped.
   const reel = document.getElementById('reel'), strip = document.getElementById('strip');
-  const GAP = 14, REEL_CARDS = 18, SPIN_MS = 2800;
+  const GAP = 14, REEL_CARDS = 18, SPIN_MS = 3080;
   async function spin(chosen) {
     strip.getAnimations().forEach(a => a.cancel()); // drop the previous spin's held (fill: forwards) end state
     const down = Math.random() < 0.5;

@@ -25,7 +25,7 @@
 
 ## 2026-10-17 — Vertical reel replaces the edge-on flash; hold before flip (active)
 - Requested by developer: cards should look shuffled top→bottom or bottom→top, pausing on the selected card before it flips.
-- A strip of 18 face-down cards (`REEL_CARDS`) slides through a card-sized window over 2.8s (`SPIN_MS`) with ease-out `cubic-bezier(.33,1,.68,1)`; direction is random per draw (chosen card is the first strip item for downward travel, the last for upward).
+- A strip of 18 face-down cards (`REEL_CARDS`) slides through a card-sized window over 3.08s (`SPIN_MS`; was 2.8s, slowed 10% at developer request) with ease-out `cubic-bezier(.33,1,.68,1)`; direction is random per draw (chosen card is the first strip item for downward travel, the last for upward).
 - Once stopped it holds 700ms face-down, then the card flips to reveal the strategy.
 - Reduced motion: no reel, no hold; the card flips straight to the result.
 - Supersedes: the 9-step edge-on symbol/back flash.
