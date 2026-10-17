@@ -1,2 +1,2 @@
-Left off: slowed spin to 3.08s; all committed and pushed; live on Pages.
+Left off: click-to-flip added; committed and pushed; live on Pages.
 Next: phone width + light mode + reduced-motion checks (TESTING-OWED.md); consider an art credit line.

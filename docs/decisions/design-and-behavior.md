@@ -36,3 +36,9 @@
 - On "Draw another" the card is hidden at once (`.gone` = `visibility:hidden`, un-flipped with transitions off); no flip-back. It reappears face-down under the reel when the reel stops, then holds and flips.
 - Applies to the first draw too (hides the idle card back behind the reel).
 - Supersedes: the 700ms flip-back before each spin.
+
+## 2026-10-17 — Click (or Enter/Space) turns the revealed card over (active)
+- Requested by developer: flip the card to look at the other side. Strategy side ⇄ Tarot art side.
+- Enabled only after the first reveal (`.flippable` on the stage); ignored while a draw is running; a new draw resets the card face-down and hides it as before.
+- Stage becomes `role="button"`, `tabindex=0`, `aria-label="Turn the card over"`; focus ring uses `--focus`.
+- Reuses the existing `.face-up` toggle and 0.7s flip; no new animation.
